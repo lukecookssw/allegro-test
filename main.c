@@ -47,8 +47,8 @@ int main(void)
         return 1;
     }
 
+    // TODO: Package font with application
     ALLEGRO_FONT *font = al_load_ttf_font("/usr/share/fonts/fira-code/FiraCode-Regular.ttf", 24, 0);
-    // ALLEGRO_FONT *font = al_create_builtin_font();
     if (!font)
     {
         printf("couldn't initialize font\n");
