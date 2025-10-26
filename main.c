@@ -4,6 +4,7 @@
 // allegro5 headers
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 
 int main(void)
 {
@@ -40,7 +41,14 @@ int main(void)
         return 1;
     }
 
-    ALLEGRO_FONT *font = al_create_builtin_font();
+    if (!al_init_ttf_addon())
+    {
+        printf("couldn't initialize ttf addon\n");
+        return 1;
+    }
+
+    ALLEGRO_FONT *font = al_load_ttf_font("/usr/share/fonts/fira-code/FiraCode-Regular.ttf", 24, 0);
+    // ALLEGRO_FONT *font = al_create_builtin_font();
     if (!font)
     {
         printf("couldn't initialize font\n");
