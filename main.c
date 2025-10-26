@@ -1,3 +1,7 @@
+// standard headers
+#include <stdio.h>
+
+// allegro5 headers
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
 
@@ -64,16 +68,9 @@ int main(void)
             break;
         case ALLEGRO_EVENT_KEY_DOWN:
         case ALLEGRO_EVENT_DISPLAY_CLOSE:
-        default:
             done = true;
             break;
         }
-
-        if (event.type == ALLEGRO_EVENT_TIMER)
-            redraw = true;
-
-        else if ((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE))
-            break;
 
         if (redraw && al_is_event_queue_empty(queue))
         {
