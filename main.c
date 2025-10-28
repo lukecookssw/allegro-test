@@ -5,6 +5,20 @@
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_primitives.h>
+
+// custom headers
+#include "lib/person/person.h"
+#include "lib/collision/collider.h"
+
+void person_check_adjust_velocity(struct Person *p)
+{
+    if (will_collide_with_border_x(p, 640, 480))
+        p->vec_direction[0] = -p->vec_direction[0];
+
+    if (will_collide_with_border_y(p, 640, 480))
+        p->vec_direction[1] = -p->vec_direction[1];
+}
 
 int main(void)
 {
@@ -65,6 +79,10 @@ int main(void)
 
     al_start_timer(timer);
 
+    // create a dude!
+    struct Person *p = person_create(100, 100, 10);
+    ALLEGRO_COLOR colour = al_map_rgb(255, 255, 255);
+
     while (!done)
     {
         al_wait_for_event(queue, &event);
@@ -83,6 +101,9 @@ int main(void)
         if (redraw && al_is_event_queue_empty(queue))
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
+            person_check_adjust_velocity(p);
+            person_move(p);
+            al_draw_circle(p->pos_x, p->pos_y, p->size, colour, 2);
             al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
             al_flip_display();
 
