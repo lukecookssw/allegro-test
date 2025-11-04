@@ -8,17 +8,10 @@
 #include <allegro5/allegro_primitives.h>
 
 // custom headers
-#include "lib/person/person.h"
-#include "lib/collision/collider.h"
+#include "window_settings.c"
+#include "lib/circle/circle.h"
+#include "lib/collision/collision.h"
 
-void person_check_adjust_velocity(struct Person *p)
-{
-    if (will_collide_with_border_x(p, 640, 480))
-        p->vec_direction[0] = -p->vec_direction[0];
-
-    if (will_collide_with_border_y(p, 640, 480))
-        p->vec_direction[1] = -p->vec_direction[1];
-}
 
 int main(void)
 {
@@ -79,8 +72,12 @@ int main(void)
 
     al_start_timer(timer);
 
-    // create a dude!
-    struct Person *p = person_create(100, 100, 10);
+    Circle *c_1 = circle_create(50.0, al_map_rgb(255, 0, 0));
+    // calculate random start position between 0 and window width/height
+    float start_x = rand() % (640 - 100) + 50;
+    float start_y = rand() % (480 - 100) + 50;
+    circle_place(c_1, start_x, start_y);
+
     ALLEGRO_COLOR colour = al_map_rgb(255, 255, 255);
 
     while (!done)
@@ -98,12 +95,27 @@ int main(void)
             break;
         }
 
+        CollisionType collision = collision_check_bounds(c_1, (Bounds){WINDOW_WIDTH, WINDOW_HEIGHT});
+        if (collision == HORIZONTAL_COLLISION)
+        {
+            circle_rebound(c_1, true, false);
+        }
+        else if (collision == VERTICAL_COLLISION)
+        {
+            circle_rebound(c_1, false, true);
+        }
+        else if (collision == BOTH_COLLISION)
+        {
+            circle_rebound(c_1, true, true);
+        }
+        circle_move(c_1);
+
         if (redraw && al_is_event_queue_empty(queue))
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
-            person_check_adjust_velocity(p);
-            person_move(p);
-            al_draw_circle(p->pos_x, p->pos_y, p->size, colour, 2);
+            circle_draw(c_1, true);
+            
+            
             al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
             al_flip_display();
 

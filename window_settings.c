@@ -1,0 +1,3 @@
+static const int WINDOW_WIDTH = 640;
+static const int WINDOW_HEIGHT = 480;
+static const int WINDOW_FULLSCREEN = 0;

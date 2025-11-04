@@ -1,36 +1,96 @@
 
 # Current objective
-- Have a circle bounce around the screen (ye olde DVD screensaver)
+- ✅ Have a circle bounce around the screen (ye olde DVD screensaver)
+- Have 2 circles bounce around the screen, and bounce off each other.
+
 
 ## Problem
-Every frame, before the circle moves, we need to figure out whether it's reached (or will reach) the edge of the screen.
+We have 2 circles, and they are being "checked" and moved sequentially.
 
-Let's say the dimensions of the area are 10x10, so the center is at position [5,5]
-If the circle has a radius of, say, 2, and it moves at random speed in both x and y axes, then...
+So, we have 2 bodies that, upon the first item checking/moving, may not be registered as colliding, but then upon the second body checking/moving, suddenly they are in collision.
 
-Frame 1: current position = [0,0]. moving at [3,2]
-Frame 2: current position = [3,2]. moving at [3,2]
-Frame 3: current position = [6,4]. moving at [3,2]
-Frame 4: current position = [9,6]. ...etc.
-Frame 5: current position = [12,8]
+To make things worse, we need to know -which- bodies are actually colliding. For instance, if there were 10 circles on screen, you'd need to know which 2 (or more!) bodies have actually collided.
 
-So, the problem is actually at frame 3. Because the circle has a radius of 2, we have to "look" 2 units ahead of the circle's position. So at Frame 3, the center is at x=6, but the edge of the circle is actually at x=8.
-This means that, when the circle moves to the next frame, it'll be out-of-bounds.
+To make things EVEN WORSE, we also need to figure out the angle of collision so we can bounce off in the appropriate direction (but this part should be relatively straightforward).
 
-So how do we solve this, conceptually? If the circle was to move ONE unit every frame, then that's easy. But it doesn't. And because we are literally between single frames here, there's no option to say "hey, next frame, only move 2 units across X", because then the circle would be slowing down for that frame, and speeding back up again next frame. Maybe that's what you're meant to do, but it doesn't sound right to me.
+OKAY, so I think the sequential checking there's just not much we can do about. Shit's just sequential man, so whatever.
 
-Instead, I guess we can just go with a "you're -close enough- to the boundary that you would cross it next frame, so I'm going to call this a collision now".
+What we need to do though, is figure out which body/ies the collision is happening between. So how do we do that.
 
-### Plan
-- We have a circle moving on a vector.
-- The circle has a known radius.
+## Plan
+This is perhaps where we arrive at "data-oriented" as opposed to "object-oriented"?
+For OOP, we would normally do "array of structs":
+```csharp
 
-so before every frame, we need to determine the following:
-1. Will the circle go beyond the boundary?
-2. If so, do we need to know -which- boundary specifically (x vs y)?
-3. we need to calculate a new vector as it will bounce/reflect off
+// pseudo code
+List<Circle> allCircles;
+for(int i = 0; i < allCircles.Length; i++>)
+{
+    Circle current = allCircles[i];
+    int newXPosition = current.Position.X += current.Velocity.X;
+    int newYPosition = current.Position.Y += current.Velocity.Y;
 
-#### Calculating new vector.
-Let's just say it's moving diagonally downwards, and we'll blow out the X value of the boundary for the sake of simplicity.
-So it's moving at [5,5]. Perfectly diagonal. Then it collides with the bottom border.
-that would be the Y value we now need to invert, so it would become [5,-5]. I think it's that easy. Same for when it inevitably collides with the X boundary - we just inverse the X velocity.
+    // ignore radius for now - assume we'd have fuzzy compare to account.
+    List<Circle?> collisions = allCircles
+        .Where(c => c.Position.X == newXPosition && c.Position.Y == newYPosition)
+        .ToList();
+    if (collissions.Length == 0)
+    {
+        // move the fellah and continue
+    }
+    else
+    {
+        foreach(var collision in collisions)
+        {
+            // handle collisions
+        }
+    }
+    
+}
+```
+If we do that, we're somewhere around O(n)^2 territory because of the `.Where()`.
+
+So can we do "struct of arrays" and do data-driven programming instead?
+
+Maybe have an array of positions so we know which circle it is? Something like:
+
+```csharp
+class Circles
+{
+    List<int> Position_X;
+    List<int> Position_y;
+    List<int> Velocity_X,
+    List<int> Velocity_y;
+}
+
+Circles allCircles;
+
+for(int i = 0; i < allCircles.Position_X.Length; i++)
+{
+    int newPos_X = allCircles.Position_X[i] + allCircles.Velocity_X[i];
+    int newPos_Y = allCircles.Position_Y[i] + allCircles.Velocity_Y[i];
+    
+    int colliderIndex_x = allCircles.Position_X.IndexOf(newPos_X);
+    int colliderIndex_y = allCircles.Position_Y.IndexOf(newPos_Y);
+
+    if (colliderIndex_x == -1 && colliderIndex_y == -1)
+    {
+        // move
+    }
+    else
+    {
+        // handle collision
+    }
+}
+
+```
+
+I'm not sure how much more performant `IndexOf` is compared to `.Where`, but it would need to be HELLA more performant, surely. Otherwise we're now at, what? O(n)^3 in that pseudo code?
+I mean, there are probably perf improvements you could do by ordering the values in the array, so you get to O(log(n)), but like, still... Seems kinda weird.
+
+From memory, the whole thing about SoA vs AoS was about maximizing L1/L2 cache hits. Having AoS meant every struct was in random locations and required separate syscalls to fetch. Or something. It's been a while.
+
+ANYWAY, let's see if we can write the AoS version in C, just so we can get something working...
+
+
+## Plan (for colliding circles)
