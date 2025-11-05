@@ -9,7 +9,7 @@
 static bool collision_processed[3][3] = {false};
 
 // prototypes
-float* calculate_rebound_velocities(Circle* c1, Circle* c2);
+void apply_rebound_velocities(Circle* c1, Circle* c2, float nx, float ny);
 
 CollisionType collision_check_bounds(Circle* circle, Bounds bounds)
 {
@@ -43,6 +43,7 @@ CollisionType collision_check_bounds(Circle* circle, Bounds bounds)
 
     return collision;
 }
+
 void collision_check_circles(Circle** circle_array)
 {
     for (int i = 0; i < 3; i++)
@@ -58,36 +59,39 @@ void collision_check_circles(Circle** circle_array)
             
             if (distance < radius_sum)
             {
-                // Only process if we haven't already handled this collision
+                // Collision detected!
                 if (!collision_processed[i][j])
                 {
-                    printf("New collision detected! Distance: %.2f, Required: %.2f\n", distance, radius_sum);
-                    printf("Before - C1 vel: (%.2f, %.2f), C2 vel: (%.2f, %.2f)\n", 
-                           c1->velocity[0], c1->velocity[1], c2->velocity[0], c2->velocity[1]);
-                    
-                    // Separate overlapping circles first
+                    // 1. Separation (Resolving Overlap)
                     float overlap = radius_sum - distance;
+                    
+                    // Handle the case where the circles are perfectly stacked (distance == 0)
+                    if (distance == 0.0f)
+                    {
+                        // Choose an arbitrary normal to separate them
+                        dx = 1.0f; 
+                        dy = 0.0f;
+                        distance = 1.0f;
+                    }
+                    
+                    // Calculate the unit normal vector (direction of collision)
                     float nx = dx / distance;
                     float ny = dy / distance;
                     
-                    // Move circles apart completely
-                    float separation = overlap * 0.5f + 1.0f; // Add extra separation
+                    // Move circles apart. The total separation distance is 'overlap'. 
+                    // We move each circle half of that distance.
+                    // Adding a small epsilon (0.001f) can prevent them from re-colliding immediately.
+                    float separation = overlap * 0.5f + 0.001f; 
+                    
                     c1->position[0] -= separation * nx;
                     c1->position[1] -= separation * ny;
                     c2->position[0] += separation * nx;
                     c2->position[1] += separation * ny;
                     
-                    // Apply collision response
-                    float* new_velocities = calculate_rebound_velocities(c1, c2);
-                    c1->velocity[0] = new_velocities[0];
-                    c1->velocity[1] = new_velocities[1];
-                    c2->velocity[0] = new_velocities[2];
-                    c2->velocity[1] = new_velocities[3];
-                    
-                    printf("After - C1 vel: (%.2f, %.2f), C2 vel: (%.2f, %.2f)\n", 
-                           c1->velocity[0], c1->velocity[1], c2->velocity[0], c2->velocity[1]);
-                    
-                    free(new_velocities);
+                    // 2. Apply Collision Response (Velocity Rebound)
+                    apply_rebound_velocities(c1, c2, nx, ny);
+
+                    // Set flag to prevent processing this collision again this frame
                     collision_processed[i][j] = true;
                 }
             }
@@ -100,43 +104,32 @@ void collision_check_circles(Circle** circle_array)
     }
 }
 
-float* calculate_rebound_velocities(Circle* c1, Circle* c2)
+// Physics calculation to update velocities in place
+void apply_rebound_velocities(Circle* c1, Circle* c2, float nx, float ny)
 {
-    // Calculate the normal vector
-    float nx = c2->position[0] - c1->position[0];
-    float ny = c2->position[1] - c1->position[1];
-    float distance = sqrtf(nx * nx + ny * ny);
-    
-    if (distance == 0.0f)
-    {
-        nx = 1.0f;
-        ny = 0.0f;
-    }
-    else
-    {
-        nx /= distance;
-        ny /= distance;
-    }
-    
-    // Calculate relative velocity
+    // Calculate relative velocity (c1_vel - c2_vel)
     float dvx = c1->velocity[0] - c2->velocity[0];
     float dvy = c1->velocity[1] - c2->velocity[1];
     
-    // Calculate velocity along the normal
+    // Calculate velocity along the normal (dot product)
     float velocity_along_normal = dvx * nx + dvy * ny;
+
+    // Check if circles are already moving apart. 
+    // If so, do nothing to prevent 'sticky' collisions.
+    if (velocity_along_normal < 0.0f)
+    {
+        return; 
+    }
     
-    printf("Normal: (%.2f, %.2f), Vel along normal: %.2f\n", nx, ny, velocity_along_normal);
+    // Coefficient of Restitution (e): 1.0f for perfect elastic collision (no energy loss)
+    float restitution = 1.0f; 
     
-    // Calculate collision response
-    float restitution = 1.0f; // Perfect elastic collision
-    float impulse = -(1 + restitution) * velocity_along_normal / 2.0f;
+    // Calculate collision impulse (your formula is correct for equal, ignored masses)
+    float impulse = -(1.0f + restitution) * velocity_along_normal / 2.0f;
     
-    printf("Impulse: %.2f\n", impulse);
-    
-    float* velocities = malloc(4 * sizeof(float));
-    velocities[0] = c1->velocity[0] + impulse * nx;
-    velocities[1] = c1->velocity[1] + impulse * ny;
-    velocities[2] = c2->velocity[0] - impulse * nx;
-    velocities[3] = c2->velocity[1] - impulse * ny;
-    return velocities;
+    // Apply the impulse to update velocities
+    c1->velocity[0] += impulse * nx;
+    c1->velocity[1] += impulse * ny;
+    c2->velocity[0] -= impulse * nx;
+    c2->velocity[1] -= impulse * ny;
 }
