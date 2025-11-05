@@ -1,5 +1,8 @@
 // standard headers
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <math.h>
 
 // allegro5 headers
 #include <allegro5/allegro5.h>
@@ -15,6 +18,9 @@
 // prototypes
 void update_physics(Circle** circles, int num_circles, Bounds bounds);
 
+// change these for testing
+static int circle_count = 2;
+static int circle_radius = 40;
 
 int main(void)
 {
@@ -75,26 +81,58 @@ int main(void)
 
     al_start_timer(timer);
 
+    set_collision_object_count(circle_count);
     // create an array of circles
-    Circle *circles[3];
+    Circle *circles[circle_count];
+
+    for (int i = 0; i < circle_count; i++)
+    {
+        circles[i] = NULL;
+        Circle* c = circle_create(circle_radius);
+        // calculate random starting position on the screen
+        float start_x = rand() % (640 - 100) + 50;
+        float start_y = rand() % (480 - 100) + 50;
+        // check whether another circle exists to avoid overlap
+        bool position_ok = false;
+        while (!position_ok)
+        {
+            position_ok = true;
+            for (int j = 0; j < i; j++)
+            {
+                Circle* other = circles[j];
+                float dx = other->position[0] - start_x;
+                float dy = other->position[1] - start_y;
+                float distance = sqrtf(dx * dx + dy * dy);
+                if (distance < (c->radius + other->radius))
+                {
+                    position_ok = false;
+                    start_x = rand() % (640 - 100) + 50;
+                    start_y = rand() % (480 - 100) + 50;
+                    break;
+                }
+            }
+        }
+        circle_place(c, start_x, start_y);
+        circles[i] = c;
+    }
 
     // get starting position in the top-left quadrant
-    float start_x = rand() % (640 - 100) + 50;
-    float start_y = rand() % (480 - 100) + 50;
-    circles[0] = circle_create(50.0, al_map_rgba(255, 0, 0, 0.5));
-    circle_place(circles[0], start_x, start_y);
-
-    // get starting position in the top-right quadrant
-    start_x = rand() % (640 - 100 - 320) + 320 + 50;
-    start_y = rand() % (480 - 100) + 50;
-    circles[1] = circle_create(50.0, al_map_rgba(0, 255, 0, 0.5));
-    circle_place(circles[1], start_x, start_y);
-
-    // get starting position in the bottom-left quadrant
-    start_x = rand() % (640 - 100) + 50;
-    start_y = rand() % (480 - 100 - 240) + 240 + 50;
-    circles[2] = circle_create(50.0, al_map_rgba(0, 0, 255, 0.5));
-    circle_place(circles[2], start_x, start_y);
+    //float start_x = rand() % (640 - 100) + 50;
+    //float start_y = rand() % (480 - 100) + 50;
+    //circles[0] = circle_create(50.0, al_map_rgba(255, 0, 0, 0.5));
+    //circle_place(circles[0], start_x, start_y);
+//
+    //// get starting position in the top-right quadrant
+    //start_x = rand() % (640 - 100 - 320) + 320 + 50;
+    //start_y = rand() % (480 - 100) + 50;
+    //circles[1] = circle_create(50.0, al_map_rgba(0, 255, 0, 0.5));
+    //circle_place(circles[1], start_x, start_y);
+//
+    //// get starting position in the bottom-left quadrant
+    //start_x = rand() % (640 - 100) + 50;
+    //start_y = rand() % (480 - 100 - 240) + 240 + 50;
+    //circles[2] = circle_create(50.0, al_map_rgba(0, 0, 255, 0.5));
+    //circle_place(circles[2], start_x, start_y);
 
     ALLEGRO_COLOR colour = al_map_rgb(255, 255, 255);
 
@@ -113,13 +151,13 @@ int main(void)
             break;
         }
 
-        update_physics(circles, 3, (Bounds){WINDOW_WIDTH, WINDOW_HEIGHT});
+        update_physics(circles, circle_count, (Bounds){WINDOW_WIDTH, WINDOW_HEIGHT});
 
         if (redraw && al_is_event_queue_empty(queue))
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
             
-            for(int i = 0; i < 3; i++)
+            for(int i = 0; i < circle_count; i++)
             {
                 Circle* c = circles[i];
                 circle_draw(c, true);

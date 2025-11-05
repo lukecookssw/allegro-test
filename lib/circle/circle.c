@@ -2,11 +2,11 @@
 #include <allegro5/allegro_primitives.h>
 #include <stdlib.h>
 
-Circle* circle_create(float radius, ALLEGRO_COLOR colour)
+Circle* circle_create(float radius)
 {
     Circle *c = malloc(sizeof(Circle));
     c->radius = radius;
-    c->colour = colour;
+    circle_change_colour(c);
     return c;
 }
 
@@ -48,4 +48,10 @@ void circle_rebound(Circle* c, bool rebound_x, bool rebound_y)
     {
         c->velocity[1] = -c->velocity[1];
     }
+}
+
+void circle_change_colour(Circle* c)
+{
+    ALLEGRO_COLOR colour = al_map_rgba(rand() % 256, rand() % 256, rand() % 256, 0.5);
+    c->colour = colour;
 }

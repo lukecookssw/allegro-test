@@ -6,7 +6,30 @@
 #include <stdbool.h>
 
 // Add collision flags to prevent repeated processing
-static bool collision_processed[3][3] = {false};
+static bool** collision_processed = NULL;
+static int collision_object_count = 0;
+
+void set_collision_object_count(int count)
+{
+    // Free existing array if it exists
+    collision_object_count = count;
+    if (collision_processed != NULL)
+    {
+        for (int i = 0; i < collision_object_count; i++)
+        {
+            free(collision_processed[i]);
+        }
+        free(collision_processed);
+    }
+    
+    // Allocate new 2D array
+    collision_object_count = count;
+    collision_processed = malloc(count * sizeof(bool*));
+    for (int i = 0; i < count; i++)
+    {
+        collision_processed[i] = calloc(count, sizeof(bool));
+    }
+}
 
 // prototypes
 void apply_rebound_velocities(Circle* c1, Circle* c2, float nx, float ny);
@@ -59,10 +82,10 @@ void collision_resolve_bounds(Circle* circle, Bounds bounds)
 
 void collision_check_circles(Circle** circle_array)
 {
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < collision_object_count; i++)
     {
         Circle* c1 = circle_array[i];
-        for (int j = i + 1; j < 3; j++)
+        for (int j = i + 1; j < collision_object_count; j++)
         {
             Circle* c2 = circle_array[j];
             float dx = c2->position[0] - c1->position[0];
@@ -106,6 +129,10 @@ void collision_check_circles(Circle** circle_array)
 
                     // Set flag to prevent processing this collision again this frame
                     collision_processed[i][j] = true;
+
+                    // change the colour of the circles to a random colour
+                    circle_change_colour(c1);
+                    circle_change_colour(c2);
                 }
             }
             else
