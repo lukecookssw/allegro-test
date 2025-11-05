@@ -12,6 +12,9 @@
 #include "lib/circle/circle.h"
 #include "lib/collision/collision.h"
 
+// prototypes
+void update_physics(Circle** circles, int num_circles, Bounds bounds);
+
 
 int main(void)
 {
@@ -110,25 +113,7 @@ int main(void)
             break;
         }
 
-        for(int i = 0; i < 3; i++)
-        {
-            Circle* c = circles[i];
-            CollisionType collision = collision_check_bounds(c, (Bounds){WINDOW_WIDTH, WINDOW_HEIGHT});
-            if (collision == HORIZONTAL_COLLISION)
-            {
-                circle_rebound(c, true, false);
-            }
-            else if (collision == VERTICAL_COLLISION)
-            {
-                circle_rebound(c, false, true);
-            }
-            else if (collision == BOTH_COLLISION)
-            {
-                circle_rebound(c, true, true);
-            }
-            circle_move(c);
-        }
-        collision_check_circles(circles);
+        update_physics(circles, 3, (Bounds){WINDOW_WIDTH, WINDOW_HEIGHT});
 
         if (redraw && al_is_event_queue_empty(queue))
         {
@@ -152,4 +137,27 @@ int main(void)
     al_destroy_event_queue(queue);
 
     return 0;
+}
+
+void update_physics(Circle** circles, int num_circles, Bounds bounds)
+{
+    // --- 1. UPDATE PHASE (Integrate Movement) ---
+    // Move all circles based on their current velocities.
+    for (int i = 0; i < num_circles; i++)
+    {
+        // P_new = P_old + V * dt (assuming circle_move handles the delta time)
+        circle_move(circles[i]); 
+    }
+
+    // --- 2. RESOLVE PHASE (Handle All Collisions) ---
+    // A. Resolve Circle-Circle Collisions
+    // This resolves overlaps and applies rebound velocities for pairs.
+    collision_check_circles(circles); 
+
+    // B. Resolve Circle-Wall Collisions
+    // This prevents spheres from getting stuck in the walls.
+    for (int i = 0; i < num_circles; i++)
+    {
+        collision_resolve_bounds(circles[i], bounds);
+    }
 }
