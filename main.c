@@ -72,11 +72,26 @@ int main(void)
 
     al_start_timer(timer);
 
-    Circle *c_1 = circle_create(50.0, al_map_rgb(255, 0, 0));
-    // calculate random start position between 0 and window width/height
+    // create an array of circles
+    Circle *circles[3];
+
+    // get starting position in the top-left quadrant
     float start_x = rand() % (640 - 100) + 50;
     float start_y = rand() % (480 - 100) + 50;
-    circle_place(c_1, start_x, start_y);
+    circles[0] = circle_create(50.0, al_map_rgba(255, 0, 0, 0.5));
+    circle_place(circles[0], start_x, start_y);
+
+    // get starting position in the top-right quadrant
+    start_x = rand() % (640 - 100 - 320) + 320 + 50;
+    start_y = rand() % (480 - 100) + 50;
+    circles[1] = circle_create(50.0, al_map_rgba(0, 255, 0, 0.5));
+    circle_place(circles[1], start_x, start_y);
+
+    // get starting position in the bottom-left quadrant
+    start_x = rand() % (640 - 100) + 50;
+    start_y = rand() % (480 - 100 - 240) + 240 + 50;
+    circles[2] = circle_create(50.0, al_map_rgba(0, 0, 255, 0.5));
+    circle_place(circles[2], start_x, start_y);
 
     ALLEGRO_COLOR colour = al_map_rgb(255, 255, 255);
 
@@ -95,28 +110,36 @@ int main(void)
             break;
         }
 
-        CollisionType collision = collision_check_bounds(c_1, (Bounds){WINDOW_WIDTH, WINDOW_HEIGHT});
-        if (collision == HORIZONTAL_COLLISION)
+        for(int i = 0; i < 3; i++)
         {
-            circle_rebound(c_1, true, false);
+            Circle* c = circles[i];
+            CollisionType collision = collision_check_bounds(c, (Bounds){WINDOW_WIDTH, WINDOW_HEIGHT});
+            if (collision == HORIZONTAL_COLLISION)
+            {
+                circle_rebound(c, true, false);
+            }
+            else if (collision == VERTICAL_COLLISION)
+            {
+                circle_rebound(c, false, true);
+            }
+            else if (collision == BOTH_COLLISION)
+            {
+                circle_rebound(c, true, true);
+            }
+            circle_move(c);
         }
-        else if (collision == VERTICAL_COLLISION)
-        {
-            circle_rebound(c_1, false, true);
-        }
-        else if (collision == BOTH_COLLISION)
-        {
-            circle_rebound(c_1, true, true);
-        }
-        circle_move(c_1);
+        collision_check_circles(circles);
 
         if (redraw && al_is_event_queue_empty(queue))
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
-            circle_draw(c_1, true);
             
+            for(int i = 0; i < 3; i++)
+            {
+                Circle* c = circles[i];
+                circle_draw(c, true);
+            }
             
-            al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
             al_flip_display();
 
             redraw = false;

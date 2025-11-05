@@ -17,4 +17,6 @@ typedef struct {
 
 CollisionType collision_check_bounds(Circle* circle, Bounds bounds);
 
+void collision_check_circles(Circle** circle_array);
+
 #endif
