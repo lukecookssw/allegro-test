@@ -4,6 +4,7 @@
 - ✅ Have 2 or more circles bounce around the screen, and bounce off each other.
 - Ensure collision is calculated when the number of circles grows
 
+
 ## Current problem
 When the number of circles increases, the collision detection starts to fail. It just can't check every single circle permutation so some are missed. This may be because:
 
