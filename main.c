@@ -62,9 +62,14 @@ int main(void)
         printf("couldn't initialize ttf addon\n");
         return 1;
     }
+    if(!al_init_primitives_addon())
+    {
+        printf("couldn't initialize primitives addon\n");
+        return 1;
+    }
 
     // TODO: Package font with application
-    ALLEGRO_FONT *font = al_load_ttf_font("/usr/share/fonts/fira-code/FiraCode-Regular.ttf", 24, 0);
+    ALLEGRO_FONT *font = al_load_ttf_font("./FiraCodeNerdFont-Regular.ttf", 24, 0);
     if (!font)
     {
         printf("couldn't initialize font\n");
@@ -156,13 +161,13 @@ int main(void)
         if (redraw && al_is_event_queue_empty(queue))
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
-            
+
             for(int i = 0; i < circle_count; i++)
             {
                 Circle* c = circles[i];
                 circle_draw(c, true);
             }
-            
+
             al_flip_display();
 
             redraw = false;
@@ -184,13 +189,13 @@ void update_physics(Circle** circles, int num_circles, Bounds bounds)
     for (int i = 0; i < num_circles; i++)
     {
         // P_new = P_old + V * dt (assuming circle_move handles the delta time)
-        circle_move(circles[i]); 
+        circle_move(circles[i]);
     }
 
     // --- 2. RESOLVE PHASE (Handle All Collisions) ---
     // A. Resolve Circle-Circle Collisions
     // This resolves overlaps and applies rebound velocities for pairs.
-    collision_check_circles(circles); 
+    collision_check_circles(circles);
 
     // B. Resolve Circle-Wall Collisions
     // This prevents spheres from getting stuck in the walls.

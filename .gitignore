@@ -1,0 +1,15 @@
+# Compiled executables
+*.out
+
+# Object files
+*.o
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Temporary files
+*~
+.DS_Store
