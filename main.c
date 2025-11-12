@@ -22,6 +22,7 @@ void update_physics(Circle** circles, int num_circles, Bounds bounds);
 static int circle_count = 2;
 static int circle_radius = 40;
 
+
 int main(void)
 {
     if (!al_init())
@@ -68,7 +69,6 @@ int main(void)
         return 1;
     }
 
-    // TODO: Package font with application
     ALLEGRO_FONT *font = al_load_ttf_font("./FiraCodeNerdFont-Regular.ttf", 24, 0);
     if (!font)
     {
@@ -181,6 +181,7 @@ int main(void)
 
     return 0;
 }
+
 
 void update_physics(Circle** circles, int num_circles, Bounds bounds)
 {
