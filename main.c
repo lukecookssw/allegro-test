@@ -19,8 +19,8 @@
 void update_physics(Circle** circles, int num_circles, Bounds bounds);
 
 // change these for testing
-static int circle_count = 2;
-static int circle_radius = 40;
+static int circle_count = 20;
+static int circle_radius = 10;
 
 
 int main(void)
@@ -93,7 +93,7 @@ int main(void)
     for (int i = 0; i < circle_count; i++)
     {
         circles[i] = NULL;
-        Circle* c = circle_create(circle_radius);
+        Circle* c = circle_create(i + 1, circle_radius);
         // calculate random starting position on the screen
         float start_x = rand() % (640 - 100) + 50;
         float start_y = rand() % (480 - 100) + 50;
