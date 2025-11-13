@@ -14,3 +14,4 @@ When the number of circles increases, the collision detection starts to fail. It
  This is kinda tricky. Looks like the general solution is spatial partitioning, where we divide the screen up into a grid, and only check collisions between circles that share the same cell. This means we now have to ID every circle, and a grid.
 
  Foo
+Bar
