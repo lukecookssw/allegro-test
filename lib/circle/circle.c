@@ -77,6 +77,10 @@ void circle_rebound(Circle *c, bool rebound_x, bool rebound_y)
 
 void circle_change_colour(Circle *c)
 {
-    ALLEGRO_COLOR colour = al_map_rgba(rand() % 256, rand() % 256, rand() % 256, 0.5);
+    ALLEGRO_COLOR colour = al_map_rgba_f(
+        rand() / 255.0f,
+        rand() / 255.0f,
+        rand() / 255.0f, 
+        0.5f);
     c->colour = colour;
 }
