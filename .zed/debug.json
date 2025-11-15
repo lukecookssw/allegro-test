@@ -4,11 +4,7 @@
     "adapter": "GDB",
     "request": "launch",
     "program": "$ZED_WORKTREE_ROOT/main.out",
-    "args": [],
     "build": "build debug",
-    "cwd": "$ZED_WORKTREE_ROOT",
-    "stopOnEntry": false,
-    "environment": [],
-    "externalConsole": false
+    "cwd": "$ZED_WORKTREE_ROOT"
   }
 ]
