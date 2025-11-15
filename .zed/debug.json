@@ -1,6 +1,6 @@
 [
   {
-    "label": "Debug myapp",
+    "label": "Debug",
     "adapter": "GDB",
     "request": "launch",
     "program": "$ZED_WORKTREE_ROOT/main.out",

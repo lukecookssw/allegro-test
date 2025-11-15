@@ -14,6 +14,7 @@
 #include "window_settings.c"
 #include "lib/circle/circle.h"
 #include "lib/collision/collision.h"
+#include "lib/collision/spatial_grid.h"
 
 // prototypes
 void update_physics(Circle** circles, int num_circles, Bounds bounds);
@@ -51,7 +52,7 @@ int main(void)
         return 1;
     }
 
-    ALLEGRO_DISPLAY *disp = al_create_display(640, 480);
+    ALLEGRO_DISPLAY *disp = al_create_display(WINDOW_WIDTH, WINDOW_HEIGHT);
     if (!disp)
     {
         printf("couldn't initialize display\n");
@@ -87,6 +88,13 @@ int main(void)
     al_start_timer(timer);
 
     set_collision_object_count(circle_count);
+
+    // create spatial grid
+    int cell_height = WINDOW_HEIGHT / 8;
+    int cell_width = WINDOW_WIDTH / 8;
+    SpatialGrid* grid = grid_create(WINDOW_WIDTH, WINDOW_HEIGHT, cell_width, cell_height);
+
+
     // create an array of circles
     Circle *circles[circle_count];
 
@@ -120,24 +128,6 @@ int main(void)
         circle_place(c, start_x, start_y);
         circles[i] = c;
     }
-
-    // get starting position in the top-left quadrant
-    //float start_x = rand() % (640 - 100) + 50;
-    //float start_y = rand() % (480 - 100) + 50;
-    //circles[0] = circle_create(50.0, al_map_rgba(255, 0, 0, 0.5));
-    //circle_place(circles[0], start_x, start_y);
-//
-    //// get starting position in the top-right quadrant
-    //start_x = rand() % (640 - 100 - 320) + 320 + 50;
-    //start_y = rand() % (480 - 100) + 50;
-    //circles[1] = circle_create(50.0, al_map_rgba(0, 255, 0, 0.5));
-    //circle_place(circles[1], start_x, start_y);
-//
-    //// get starting position in the bottom-left quadrant
-    //start_x = rand() % (640 - 100) + 50;
-    //start_y = rand() % (480 - 100 - 240) + 240 + 50;
-    //circles[2] = circle_create(50.0, al_map_rgba(0, 0, 255, 0.5));
-    //circle_place(circles[2], start_x, start_y);
 
     ALLEGRO_COLOR colour = al_map_rgb(255, 255, 255);
 

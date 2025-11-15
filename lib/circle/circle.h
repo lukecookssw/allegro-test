@@ -15,7 +15,6 @@ typedef struct
 {
 
     int id;
-    enum CIRCLE_QUADRANT current_quadrant;
     ALLEGRO_COLOR colour;
     float radius;
     float position[2]; // position[0] = x, position[1] = y

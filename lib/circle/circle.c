@@ -10,33 +10,10 @@ Circle *circle_create(int id, float radius)
     return c;
 }
 
-void set_quadrant(Circle* c)
-{
-    // determine quadrant (hard-code dimensions right now)
-    bool isLeft = (int)c->position[0] <= (640 / 2);
-    bool isTop = (int)c->position[1] <= (480 / 2);
-    if (isLeft)
-    {
-        if (isTop)
-            c->current_quadrant = TOP_LEFT;
-        else
-            c->current_quadrant = BOTTOM_LEFT;
-    }
-    else
-    {
-        if (isTop)
-            c->current_quadrant = TOP_RIGHT;
-        else
-            c->current_quadrant = BOTTOM_RIGHT;
-    }
-}
-
 void circle_place(Circle *c, float position_x, float position_y)
 {
     c->position[0] = position_x;
     c->position[1] = position_y;
-
-    set_quadrant(c);
 
     // set initial velocity, random direction and speed between 2 and 5
     float velocity_x = (rand() % 4) + 2;
@@ -48,7 +25,6 @@ void circle_move(Circle *c)
 {
     c->position[0] += c->velocity[0];
     c->position[1] += c->velocity[1];
-    set_quadrant(c);
 }
 
 void circle_draw(Circle *c, bool filled)

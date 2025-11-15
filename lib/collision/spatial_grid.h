@@ -25,7 +25,7 @@ typedef struct
     int cell_height;
     int world_width;
     int world_height;
-    CircleList** cells;
+    CircleList** cells; // 2D array for every cell
 } SpatialGrid;
 
 SpatialGrid* grid_create(int world_w, int world_h, int cell_w, int cell_h);

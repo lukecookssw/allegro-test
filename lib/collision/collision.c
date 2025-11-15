@@ -89,60 +89,57 @@ void collision_check_circles(Circle** circle_array)
         for (int j = i + 1; j < collision_object_count; j++)
         {
             Circle* c2 = circle_array[j];
-            if (c1->current_quadrant == c2->current_quadrant)
+            float dx = c2->position[0] - c1->position[0];
+            float dy = c2->position[1] - c1->position[1];
+            float distance = sqrtf(dx * dx + dy * dy);
+            float radius_sum = c1->radius + c2->radius;
+
+            if (distance < radius_sum)
             {
-                float dx = c2->position[0] - c1->position[0];
-                float dy = c2->position[1] - c1->position[1];
-                float distance = sqrtf(dx * dx + dy * dy);
-                float radius_sum = c1->radius + c2->radius;
-
-                if (distance < radius_sum)
+                // Collision detected!
+                if (!collision_processed[i][j])
                 {
-                    // Collision detected!
-                    if (!collision_processed[i][j])
+                    // 1. Separation (Resolving Overlap)
+                    float overlap = radius_sum - distance;
+
+                    // Handle the case where the circles are perfectly stacked (distance == 0)
+                    if (distance == 0.0f)
                     {
-                        // 1. Separation (Resolving Overlap)
-                        float overlap = radius_sum - distance;
-
-                        // Handle the case where the circles are perfectly stacked (distance == 0)
-                        if (distance == 0.0f)
-                        {
-                            // Choose an arbitrary normal to separate them
-                            dx = 1.0f;
-                            dy = 0.0f;
-                            distance = 1.0f;
-                        }
-
-                        // Calculate the unit normal vector (direction of collision)
-                        float nx = dx / distance;
-                        float ny = dy / distance;
-
-                        // Move circles apart. The total separation distance is 'overlap'.
-                        // We move each circle half of that distance.
-                        // Adding a small epsilon (0.001f) can prevent them from re-colliding immediately.
-                        float separation = overlap * 0.5f + 0.001f;
-
-                        c1->position[0] -= separation * nx;
-                        c1->position[1] -= separation * ny;
-                        c2->position[0] += separation * nx;
-                        c2->position[1] += separation * ny;
-
-                        // 2. Apply Collision Response (Velocity Rebound)
-                        apply_rebound_velocities(c1, c2, nx, ny);
-
-                        // Set flag to prevent processing this collision again this frame
-                        collision_processed[i][j] = true;
-
-                        // change the colour of the circles to a random colour
-                        circle_change_colour(c1);
-                        circle_change_colour(c2);
+                        // Choose an arbitrary normal to separate them
+                        dx = 1.0f;
+                        dy = 0.0f;
+                        distance = 1.0f;
                     }
+
+                    // Calculate the unit normal vector (direction of collision)
+                    float nx = dx / distance;
+                    float ny = dy / distance;
+
+                    // Move circles apart. The total separation distance is 'overlap'.
+                    // We move each circle half of that distance.
+                    // Adding a small epsilon (0.001f) can prevent them from re-colliding immediately.
+                    float separation = overlap * 0.5f + 0.001f;
+
+                    c1->position[0] -= separation * nx;
+                    c1->position[1] -= separation * ny;
+                    c2->position[0] += separation * nx;
+                    c2->position[1] += separation * ny;
+
+                    // 2. Apply Collision Response (Velocity Rebound)
+                    apply_rebound_velocities(c1, c2, nx, ny);
+
+                    // Set flag to prevent processing this collision again this frame
+                    collision_processed[i][j] = true;
+
+                    // change the colour of the circles to a random colour
+                    circle_change_colour(c1);
+                    circle_change_colour(c2);
                 }
-                else
-                {
-                    // Reset collision flag when circles are separated
-                    collision_processed[i][j] = false;
-                }
+            }
+            else
+            {
+                // Reset collision flag when circles are separated
+                collision_processed[i][j] = false;
             }
 
         }
