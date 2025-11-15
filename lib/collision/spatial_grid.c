@@ -90,6 +90,42 @@ void grid_insert(SpatialGrid *grid, Circle *circle)
 
 void grid_get_nearby_circles(SpatialGrid *grid, Circle *circle, CircleList *out)
 {
+    out->head = NULL;
+    out->count = 0;
+
+    int circle_row_index = get_circle_row(grid, circle);
+    int circle_col_index = get_circle_column(grid, circle);
+
+    // one behind, one in front
+    for (int row_offset = -1; row_offset <= 1; row_offset++)
+    {
+        // one above, one below
+        for (int col_offset = -1; col_offset <= 1; col_offset++)
+        {
+            // row/col indexes to check
+            int check_row = circle_row_index + row_offset;
+            int check_col = circle_col_index + col_offset;
+
+            if (check_row >= 0 && check_row < grid->rows &&
+                check_col >= 0 && check_col < grid->columns)
+            {
+                if(grid->cells[check_row][check_col].count == 0)
+                    continue;
+
+                CircleNode* current = grid->cells[check_row][check_col].head;
+                while(current != NULL)
+                {
+                    CircleNode* new_node = malloc(sizeof(CircleNode));
+                    new_node->circle = current->circle;
+                    new_node->next = out->head;
+                    out->head = new_node;
+                    out->count++;
+
+                    current = current->next;
+                }
+            }
+        }
+    }
 }
 
 int get_circle_row(SpatialGrid *grid, Circle *circle)
