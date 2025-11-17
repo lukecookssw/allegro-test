@@ -6,9 +6,11 @@
 int get_circle_row(SpatialGrid *grid, Circle *circle);
 int get_circle_column(SpatialGrid *grid, Circle *circle);
 
-SpatialGrid *grid_create(int world_w, int world_h, int cell_w, int cell_h)
+SpatialGrid *grid_create(int circle_count, int world_w, int world_h, int cell_w, int cell_h)
 {
     SpatialGrid *grid = malloc(sizeof(SpatialGrid));
+
+    grid->circle_count = circle_count;
 
     grid->cell_height = cell_h;
     grid->cell_width = cell_w;

@@ -19,6 +19,7 @@ typedef struct
 
 typedef struct
 {
+    int circle_count;
     int rows;
     int columns;
     int cell_width;
@@ -28,7 +29,7 @@ typedef struct
     CircleList** cells; // 2D array for every cell
 } SpatialGrid;
 
-SpatialGrid* grid_create(int world_w, int world_h, int cell_w, int cell_h);
+SpatialGrid* grid_create(int circle_count, int world_w, int world_h, int cell_w, int cell_h);
 void grid_clear(SpatialGrid* grid);
 void grid_insert(SpatialGrid* grid, Circle* circle);
 void grid_get_nearby_circles(SpatialGrid* grid, Circle* circle, CircleList* out);

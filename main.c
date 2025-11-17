@@ -12,12 +12,18 @@
 
 // custom headers
 #include "window_settings.c"
+#include "lib/window/window.h"
+
+// lib
 #include "lib/circle/circle.h"
-#include "lib/collision/collision.h"
-#include "lib/collision/spatial_grid.h"
+#include "lib/spatial_grid/spatial_grid.h"
+#include "lib/collision/window_bounds_collider/window_bounds_collider.h"
+#include "lib/collision/circle_collider/circle_collider.h"
+
+
 
 // prototypes
-void update_physics(Circle** circles, int num_circles, Bounds bounds);
+void update_physics(SpatialGrid* grid, Circle** circles, int num_circles, Window bounds);
 
 // change these for testing
 static int circle_count = 20;
@@ -87,12 +93,12 @@ int main(void)
 
     al_start_timer(timer);
 
-    set_collision_object_count(circle_count);
+    //set_collision_object_count(circle_count);
 
     // create spatial grid
     int cell_height = WINDOW_HEIGHT / 8;
     int cell_width = WINDOW_WIDTH / 8;
-    SpatialGrid* grid = grid_create(WINDOW_WIDTH, WINDOW_HEIGHT, cell_width, cell_height);
+    SpatialGrid* grid = grid_create(circle_count, WINDOW_WIDTH, WINDOW_HEIGHT, cell_width, cell_height);
 
 
     // create an array of circles
@@ -127,6 +133,7 @@ int main(void)
         }
         circle_place(c, start_x, start_y);
         circles[i] = c;
+        grid_insert(grid, circles[i]);
     }
 
     ALLEGRO_COLOR colour = al_map_rgb(255, 255, 255);
@@ -146,7 +153,7 @@ int main(void)
             break;
         }
 
-        update_physics(circles, circle_count, (Bounds){WINDOW_WIDTH, WINDOW_HEIGHT});
+        update_physics(grid, circles, circle_count, (Window){WINDOW_WIDTH, WINDOW_HEIGHT});
 
         if (redraw && al_is_event_queue_empty(queue))
         {
@@ -173,7 +180,7 @@ int main(void)
 }
 
 
-void update_physics(Circle** circles, int num_circles, Bounds bounds)
+void update_physics(SpatialGrid* grid, Circle** circles, int num_circles, Window bounds)
 {
     // --- 1. UPDATE PHASE (Integrate Movement) ---
     // Move all circles based on their current velocities.
@@ -186,12 +193,12 @@ void update_physics(Circle** circles, int num_circles, Bounds bounds)
     // --- 2. RESOLVE PHASE (Handle All Collisions) ---
     // A. Resolve Circle-Circle Collisions
     // This resolves overlaps and applies rebound velocities for pairs.
-    collision_check_circles(circles);
+    ccoll_rebound_velocity(grid);
 
     // B. Resolve Circle-Wall Collisions
     // This prevents spheres from getting stuck in the walls.
     for (int i = 0; i < num_circles; i++)
     {
-        collision_resolve_bounds(circles[i], bounds);
+        wbcoll_rebound_velocity(circles[i], bounds);
     }
 }
