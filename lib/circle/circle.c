@@ -19,7 +19,14 @@ void circle_place(Circle *c, float position_x, float position_y, int max_speed)
     // set initial velocity, random direction and speed between 1 and max_speed
     float velocity_x = (rand() % (max_speed - 1)) + 1;
     float velocity_y = (rand() % (max_speed - 1)) + 1;
-    c->velocity[0] = velocity_x;
+    
+    // randomize velocity direction and speed
+    if (rand() % 2 == 0)
+        velocity_x = -velocity_x;
+    if (rand() % 2 == 0)
+        velocity_y = -velocity_y;
+    
+        c->velocity[0] = velocity_x;
     c->velocity[1] = velocity_y;
 }
 void circle_move(Circle *c)
