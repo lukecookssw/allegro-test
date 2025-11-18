@@ -165,7 +165,7 @@ int main(void)
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
 
-            //al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Bounce!");
+            al_draw_text(font, al_map_rgb(255, 255, 255), 320, 0, ALLEGRO_ALIGN_CENTRE, "Bounce!");
 
             if (draw_grid)
             {
