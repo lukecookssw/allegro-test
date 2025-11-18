@@ -90,6 +90,7 @@ void grid_insert(SpatialGrid *grid, Circle *circle)
     grid->cells[row][col].count++;
 }
 
+// TODO: Get it by cell, not by circle
 void grid_get_nearby_circles(SpatialGrid *grid, Circle *circle, CircleList *out)
 {
     out->head = NULL;

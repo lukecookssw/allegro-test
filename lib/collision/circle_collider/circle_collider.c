@@ -28,26 +28,31 @@ void ccoll_process_cell(SpatialGrid *grid, CircleList *cell)
 
     
     CircleNode* current = cell->head;
+    
+    // get nearby circles from neighbouring cells once for this cell
+    CircleList nearbyCircles;
+    grid_get_nearby_circles(grid, current->circle, &nearbyCircles);
+
     // for each circle in the cell, we need to check whether they rebound against other nearby circles (including those in neighbouring cells)
     while(current != NULL)
     {
         Circle* c = current->circle;
-        CircleList nearbyCircles;
-        grid_get_nearby_circles(grid, c, &nearbyCircles);
-        ccoll_process_circle(current->circle, &nearbyCircles);
-
-        // Free the nearby circles list to prevent memory leak
-        CircleNode* nearby_current = nearbyCircles.head;
-        while(nearby_current != NULL)
-        {
-            CircleNode* next = nearby_current->next;
-            free(nearby_current);
-            nearby_current = next;
-        }
+        //CircleList nearbyCircles;
+        //grid_get_nearby_circles(grid, c, &nearbyCircles);
+        
+        ccoll_process_circle(c, &nearbyCircles);
 
         current = current->next;
     }
-
+    
+    // Free the nearby circles list to prevent memory leak
+    CircleNode* nearby_current = nearbyCircles.head;
+    while(nearby_current != NULL)
+    {
+        CircleNode* next = nearby_current->next;
+        free(nearby_current);
+        nearby_current = next;
+    }
     
     
 }

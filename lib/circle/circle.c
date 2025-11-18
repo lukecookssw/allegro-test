@@ -2,11 +2,11 @@
 #include <allegro5/allegro_primitives.h>
 #include <stdlib.h>
 
-Circle *circle_create(int id, float radius)
+Circle *circle_create(int id, float min_radius, float max_radius)
 {
     Circle *c = malloc(sizeof(Circle));
     c->id = id;
-    c->radius = radius;
+    c->radius = (rand() % (int)(max_radius - min_radius + 1)) + min_radius;
     circle_change_colour(c);
     return c;
 }

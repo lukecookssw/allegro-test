@@ -27,11 +27,56 @@ void update_physics(SpatialGrid* grid, Circle** circles, int num_circles, Window
 void grid_draw_debug(SpatialGrid* grid);
 
 // change these for testing
-static int circle_count = 12;
-static int circle_radius = 10;
+static int circle_count = 100;
+static int circle_min_radius = 8;
+static int circle_max_radius = 20;
 static int circle_max_speed = 5;
-static bool draw_grid = true;
+static bool draw_grid = false;
 
+int cell_height(Window *window)
+{
+    int target_size = circle_max_radius * 2.5;
+    int best_height = target_size;
+    int best_height_diff = window->height;
+
+    for (int divisor = 1; divisor <= window->height; divisor++)
+    {
+        if (window->height % divisor == 0)
+        {
+            int cell_h = window->height / divisor;
+            int diff = abs(cell_h - target_size);
+            if (diff < best_height_diff)
+            {
+                best_height_diff = diff;
+                best_height = cell_h;
+            }
+        }
+    }
+
+    return best_height;
+}
+int cell_width(Window *window)
+{
+    int target_size = circle_max_radius * 2.5;
+    int best_width = target_size;
+    int best_width_diff = window->width;
+
+    for (int divisor = 1; divisor <= window->width; divisor++)
+    {
+        if (window->width % divisor == 0)
+        {
+            int cell_h = window->height / divisor;
+            int diff = abs(cell_h - target_size);
+            if (diff < best_width_diff)
+            {
+                best_width_diff = diff;
+                best_width = window->width / divisor;
+            }
+        }
+    }
+
+    return best_width;
+}
 
 int main(void)
 {
@@ -102,9 +147,7 @@ int main(void)
     window->height = WINDOW_HEIGHT;
     
     // create spatial grid
-    int cell_height = WINDOW_HEIGHT / 8;
-    int cell_width = WINDOW_WIDTH / 8;
-    SpatialGrid* grid = grid_create(circle_count, window->width, window->height, cell_width, cell_height);
+    SpatialGrid* grid = grid_create(circle_count, window->width, window->height, cell_width(window), cell_height(window));
 
 
     // create an array of circles
@@ -112,7 +155,7 @@ int main(void)
 
     for (int i = 0; i < circle_count; i++)
     {
-        Circle* c = circle_create(i + 1, circle_radius);
+        Circle* c = circle_create(i + 1, circle_min_radius, circle_max_radius);
         // calculate random starting position on the screen
         float start_x = rand() % (window->width - 100) + 50;
         float start_y = rand() % (window->height - 100) + 50;
