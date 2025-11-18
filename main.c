@@ -79,6 +79,7 @@ int main(void)
         return 1;
     }
 
+    // needed if we want to print text on screen
     ALLEGRO_FONT *font = al_load_ttf_font("./FiraCodeNerdFont-Regular.ttf", 24, 0);
     if (!font)
     {
@@ -163,6 +164,9 @@ int main(void)
         if (redraw && al_is_event_queue_empty(queue))
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
+
+            //al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Bounce!");
+
             if (draw_grid)
             {
                 grid_draw_debug(grid);
@@ -206,14 +210,12 @@ void grid_draw_debug(SpatialGrid* grid)
 void update_physics(SpatialGrid* grid, Circle** circles, int num_circles, Window bounds)
 {
     grid_clear(grid);
+    
     // --- 1. UPDATE PHASE (Integrate Movement) ---
     // Move all circles based on their current velocities.
     for (int i = 0; i < num_circles; i++)
     {
-        
-        // P_new = P_old + V * dt (assuming circle_move handles the delta time)
         circle_move(circles[i]);
-
         grid_insert(grid, circles[i]);
     }
 
@@ -226,8 +228,6 @@ void update_physics(SpatialGrid* grid, Circle** circles, int num_circles, Window
     // B. Resolve Circle-Wall Collisions
     // This prevents spheres from getting stuck in the walls.
     for (int i = 0; i < num_circles; i++)
-    {
         wbcoll_rebound_velocity(circles[i], bounds);
-    }
     
 }

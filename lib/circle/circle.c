@@ -31,25 +31,9 @@ void circle_move(Circle *c)
 void circle_draw(Circle *c, bool filled)
 {
     if (filled)
-    {
         al_draw_filled_circle(c->position[0], c->position[1], c->radius, c->colour);
-    }
     else
-    {
         al_draw_circle(c->position[0], c->position[1], c->radius, c->colour, 2);
-    }
-}
-
-void circle_rebound(Circle *c, bool rebound_x, bool rebound_y)
-{
-    if (rebound_x)
-    {
-        c->velocity[0] = -c->velocity[0];
-    }
-    if (rebound_y)
-    {
-        c->velocity[1] = -c->velocity[1];
-    }
 }
 
 void circle_change_colour(Circle *c)

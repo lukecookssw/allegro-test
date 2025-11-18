@@ -126,14 +126,12 @@ void ccoll_apply_rebound_velocities(Circle* c1, Circle* c2, float nx, float ny)
     // Check if circles are already moving apart.
     // If so, do nothing to prevent 'sticky' collisions.
     if (velocity_along_normal < 0.0f)
-    {
         return;
-    }
 
     // Coefficient of Restitution (e): 1.0f for perfect elastic collision (no energy loss)
     float restitution = 1.0f;
 
-    // Calculate collision impulse (your formula is correct for equal, ignored masses)
+    // Calculate collision impulse scalar
     float impulse = -(1.0f + restitution) * velocity_along_normal / 2.0f;
 
     // Apply the impulse to update velocities
