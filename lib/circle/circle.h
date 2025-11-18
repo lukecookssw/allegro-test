@@ -22,7 +22,7 @@ typedef struct
 } Circle;
 
 Circle* circle_create(int id, float radius);
-void circle_place(Circle* c, float position_x, float position_y);
+void circle_place(Circle* c, float position_x, float position_y, int max_speed);
 void circle_move(Circle* c);
 void circle_draw(Circle* c, bool filled);
 void circle_rebound(Circle* c, bool rebound_x, bool rebound_y);

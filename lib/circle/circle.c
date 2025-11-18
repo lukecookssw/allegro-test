@@ -5,19 +5,20 @@
 Circle *circle_create(int id, float radius)
 {
     Circle *c = malloc(sizeof(Circle));
+    c->id = id;
     c->radius = radius;
     circle_change_colour(c);
     return c;
 }
 
-void circle_place(Circle *c, float position_x, float position_y)
+void circle_place(Circle *c, float position_x, float position_y, int max_speed)
 {
     c->position[0] = position_x;
     c->position[1] = position_y;
 
-    // set initial velocity, random direction and speed between 2 and 5
-    float velocity_x = (rand() % 4) + 2;
-    float velocity_y = (rand() % 4) + 2;
+    // set initial velocity, random direction and speed between 1 and max_speed
+    float velocity_x = (rand() % (max_speed - 1)) + 1;
+    float velocity_y = (rand() % (max_speed - 1)) + 1;
     c->velocity[0] = velocity_x;
     c->velocity[1] = velocity_y;
 }

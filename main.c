@@ -26,8 +26,9 @@
 void update_physics(SpatialGrid* grid, Circle** circles, int num_circles, Window bounds);
 
 // change these for testing
-static int circle_count = 20;
-static int circle_radius = 10;
+static int circle_count = 12;
+static int circle_radius = 40;
+static int circle_max_speed = 17;
 
 
 int main(void)
@@ -106,7 +107,7 @@ int main(void)
 
     for (int i = 0; i < circle_count; i++)
     {
-        circles[i] = NULL;
+        //circles[i] = NULL;
         Circle* c = circle_create(i + 1, circle_radius);
         // calculate random starting position on the screen
         float start_x = rand() % (640 - 100) + 50;
@@ -131,7 +132,7 @@ int main(void)
                 }
             }
         }
-        circle_place(c, start_x, start_y);
+        circle_place(c, start_x, start_y, circle_max_speed);
         circles[i] = c;
         grid_insert(grid, circles[i]);
     }
@@ -182,18 +183,23 @@ int main(void)
 
 void update_physics(SpatialGrid* grid, Circle** circles, int num_circles, Window bounds)
 {
+    grid_clear(grid);
     // --- 1. UPDATE PHASE (Integrate Movement) ---
     // Move all circles based on their current velocities.
     for (int i = 0; i < num_circles; i++)
     {
+        
         // P_new = P_old + V * dt (assuming circle_move handles the delta time)
         circle_move(circles[i]);
+
+        grid_insert(grid, circles[i]);
     }
 
     // --- 2. RESOLVE PHASE (Handle All Collisions) ---
     // A. Resolve Circle-Circle Collisions
     // This resolves overlaps and applies rebound velocities for pairs.
     ccoll_rebound_velocity(grid);
+    
 
     // B. Resolve Circle-Wall Collisions
     // This prevents spheres from getting stuck in the walls.
@@ -201,4 +207,5 @@ void update_physics(SpatialGrid* grid, Circle** circles, int num_circles, Window
     {
         wbcoll_rebound_velocity(circles[i], bounds);
     }
+    
 }

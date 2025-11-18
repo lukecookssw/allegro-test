@@ -11,11 +11,29 @@ bool wbcoll_will_collide_right(Circle* c, int window_width);
 
 void wbcoll_rebound_velocity(Circle* c, Window window)
 {
-    if(wbcoll_will_collide_top(c) || wbcoll_will_collide_bottom(c, window.height))
+    if(wbcoll_will_collide_top(c))
+    {
         c->velocity[1] = -c->velocity[1];
+        c->position[1] = c->radius + 0.01f;
+    }
+    if(wbcoll_will_collide_bottom(c, window.height))
+    {
+        c->velocity[1] = -c->velocity[1];
+        c->position[1] = window.height - c->radius - 0.01f;
+    }
 
-    if (wbcoll_will_collide_left(c) || wbcoll_will_collide_right(c, window.width))
+
+    if (wbcoll_will_collide_left(c))
+    {
         c->velocity[0] = -c->velocity[0];
+        c->position[0] = c->radius + 0.01f;
+    }
+    if(wbcoll_will_collide_right(c, window.width))
+    {
+        c->velocity[0] = -c->velocity[0];
+        c->position[0] = window.width - c->radius - 0.01f;
+    }
+        
 }
 
 bool wbcoll_will_collide_top(Circle* c)

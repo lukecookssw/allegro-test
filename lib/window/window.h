@@ -3,8 +3,8 @@
 
 typedef struct Window
 {
-    int height;
     int width;
+    int height;
 } Window;
 
 #endif

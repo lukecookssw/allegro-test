@@ -26,11 +26,30 @@ void ccoll_process_cell(SpatialGrid *grid, CircleList *cell)
     if (cell->count == 0)
         return;
 
+    
+    CircleNode* current = cell->head;
     // for each circle in the cell, we need to check whether they rebound against other nearby circles (including those in neighbouring cells)
-    Circle *c = cell->head->circle;
-    CircleList nearbyCircles;
-    grid_get_nearby_circles(grid, c, &nearbyCircles);
-    ccoll_process_circle(c, &nearbyCircles);
+    while(current != NULL)
+    {
+        Circle* c = current->circle;
+        CircleList nearbyCircles;
+        grid_get_nearby_circles(grid, c, &nearbyCircles);
+        ccoll_process_circle(current->circle, &nearbyCircles);
+
+        // Free the nearby circles list to prevent memory leak
+        CircleNode* nearby_current = nearbyCircles.head;
+        while(nearby_current != NULL)
+        {
+            CircleNode* next = nearby_current->next;
+            free(nearby_current);
+            nearby_current = next;
+        }
+
+        current = current->next;
+    }
+
+    
+    
 }
 
 void ccoll_process_circle(Circle* c1, CircleList* nearby)
@@ -38,11 +57,16 @@ void ccoll_process_circle(Circle* c1, CircleList* nearby)
     if(nearby->count == 0)
         return;
 
+    //printf("Circle %d checking %d nearby circles\n", c1->id, nearby->count);
+
     CircleNode* current = nearby->head;
     while(current != NULL)
     {
         Circle* c2 = current->circle;
-        ccoll_calculate_circle_collision(c1, c2);
+        if(c1->id < c2->id) // prevent duplicate and self-collision
+            ccoll_calculate_circle_collision(c1, c2);
+        
+        current = current->next;
     }
 }
 
