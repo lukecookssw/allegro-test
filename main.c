@@ -24,11 +24,13 @@
 
 // prototypes
 void update_physics(SpatialGrid* grid, Circle** circles, int num_circles, Window bounds);
+void grid_draw_debug(SpatialGrid* grid);
 
 // change these for testing
 static int circle_count = 12;
-static int circle_radius = 40;
-static int circle_max_speed = 17;
+static int circle_radius = 10;
+static int circle_max_speed = 5;
+static bool draw_grid = true;
 
 
 int main(void)
@@ -94,12 +96,14 @@ int main(void)
 
     al_start_timer(timer);
 
-    //set_collision_object_count(circle_count);
-
+    Window* window = malloc(sizeof(Window));
+    window->width = WINDOW_WIDTH;
+    window->height = WINDOW_HEIGHT;
+    
     // create spatial grid
     int cell_height = WINDOW_HEIGHT / 8;
     int cell_width = WINDOW_WIDTH / 8;
-    SpatialGrid* grid = grid_create(circle_count, WINDOW_WIDTH, WINDOW_HEIGHT, cell_width, cell_height);
+    SpatialGrid* grid = grid_create(circle_count, window->width, window->height, cell_width, cell_height);
 
 
     // create an array of circles
@@ -107,11 +111,11 @@ int main(void)
 
     for (int i = 0; i < circle_count; i++)
     {
-        //circles[i] = NULL;
         Circle* c = circle_create(i + 1, circle_radius);
         // calculate random starting position on the screen
-        float start_x = rand() % (640 - 100) + 50;
-        float start_y = rand() % (480 - 100) + 50;
+        float start_x = rand() % (window->width - 100) + 50;
+        float start_y = rand() % (window->height - 100) + 50;
+        
         // check whether another circle exists to avoid overlap
         bool position_ok = false;
         while (!position_ok)
@@ -126,8 +130,8 @@ int main(void)
                 if (distance < (c->radius + other->radius))
                 {
                     position_ok = false;
-                    start_x = rand() % (640 - 100) + 50;
-                    start_y = rand() % (480 - 100) + 50;
+                    start_x = rand() % (window->width - 100) + 50;
+                    start_y = rand() % (window->height - 100) + 50;
                     break;
                 }
             }
@@ -154,11 +158,15 @@ int main(void)
             break;
         }
 
-        update_physics(grid, circles, circle_count, (Window){WINDOW_WIDTH, WINDOW_HEIGHT});
+        update_physics(grid, circles, circle_count, *window);
 
         if (redraw && al_is_event_queue_empty(queue))
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
+            if (draw_grid)
+            {
+                grid_draw_debug(grid);
+            }
 
             for(int i = 0; i < circle_count; i++)
             {
@@ -178,6 +186,20 @@ int main(void)
     al_destroy_event_queue(queue);
 
     return 0;
+}
+
+void grid_draw_debug(SpatialGrid* grid)
+{
+    for (int row = 0; row < grid->rows; row++) {
+        for (int col = 0; col < grid->columns; col++) {
+            int x = col * grid->cell_width;
+            int y = row * grid->cell_height;
+            ALLEGRO_COLOR color = (grid->cells[row][col].count > 0) 
+                ? al_map_rgba(255, 255, 0, 100)  // Yellow if occupied
+                : al_map_rgba(50, 50, 50, 50);    // Dark gray if empty
+            al_draw_rectangle(x, y, x + grid->cell_width, y + grid->cell_height, color, 1);
+        }
+    }
 }
 
 
