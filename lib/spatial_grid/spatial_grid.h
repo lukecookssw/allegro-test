@@ -19,6 +19,13 @@ typedef struct
 
 typedef struct
 {
+    CircleNode* nodes;
+    int capacity;
+    int next_index;
+} NodePool;
+
+typedef struct
+{
     int circle_count;
     int rows;
     int columns;
@@ -27,6 +34,7 @@ typedef struct
     int world_width;
     int world_height;
     CircleList** cells; // 2D array for every cell
+    NodePool* node_pool;
 } SpatialGrid;
 
 SpatialGrid* grid_create(int circle_count, int world_w, int world_h, int cell_w, int cell_h);
