@@ -27,10 +27,10 @@ void update_physics(SpatialGrid* grid, Circle** circles, int num_circles, Window
 void grid_draw_debug(SpatialGrid* grid);
 
 // change these for testing
-static int circle_count = 100;
-static int circle_min_radius = 8;
-static int circle_max_radius = 20;
-static int circle_max_speed = 5;
+static int circle_count = 10;
+static int circle_min_radius = 30; // 2kg
+static int circle_max_radius = 60; // 4kg
+static int circle_max_speed = 30;
 static bool draw_grid = false;
 
 int cell_height(Window *window)

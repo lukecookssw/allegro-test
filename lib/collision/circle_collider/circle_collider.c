@@ -37,23 +37,11 @@ void ccoll_process_cell(SpatialGrid *grid, CircleList *cell)
     while(current != NULL)
     {
         Circle* c = current->circle;
-        //CircleList nearbyCircles;
-        //grid_get_nearby_circles(grid, c, &nearbyCircles);
-        
         ccoll_process_circle(c, &nearbyCircles);
-
         current = current->next;
     }
     
-    // Free the nearby circles list to prevent memory leak
-    CircleNode* nearby_current = nearbyCircles.head;
-    while(nearby_current != NULL)
-    {
-        CircleNode* next = nearby_current->next;
-        free(nearby_current);
-        nearby_current = next;
-    }
-    
+    // No need to free - nodes are managed by the pool and will be reset on next grid_clear()
     
 }
 

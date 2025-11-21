@@ -1,10 +1,15 @@
 #include "spatial_grid.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 
 // prototypes
 int get_circle_row(SpatialGrid *grid, Circle *circle);
 int get_circle_column(SpatialGrid *grid, Circle *circle);
+NodePool* node_pool_create(int capacity);
+void node_pool_reset(NodePool* pool);
+CircleNode* node_pool_allocate(NodePool* pool);
+void node_pool_destroy(NodePool* pool);
 
 SpatialGrid *grid_create(int circle_count, int world_w, int world_h, int cell_w, int cell_h)
 {
@@ -20,6 +25,12 @@ SpatialGrid *grid_create(int circle_count, int world_w, int world_h, int cell_w,
 
     grid->rows = world_h / cell_h;
     grid->columns = world_w / cell_w;
+
+    // Create node pool - allocate enough for all circles plus neighbors
+    // Each circle needs ~9 nodes (itself in 9 neighboring cells worst case)
+    // Plus nearby list allocations (3x3 grid * avg circles per cell)
+    int pool_capacity = circle_count * 20;
+    grid->node_pool = node_pool_create(pool_capacity);
 
     // create an array of pointers
     grid->cells = malloc(grid->rows * sizeof(CircleList *));
@@ -50,18 +61,14 @@ SpatialGrid *grid_create(int circle_count, int world_w, int world_h, int cell_w,
 
 void grid_clear(SpatialGrid *grid)
 {
+    // Reset node pool instead of freeing individual nodes
+    node_pool_reset(grid->node_pool);
+    
+    // Clear all cell lists
     for (int i = 0; i < grid->rows; i++)
     {
         for (int j = 0; j < grid->columns; j++)
         {
-            CircleNode *current = grid->cells[i][j].head;
-            while (current != NULL)
-            {
-                CircleNode *next = current->next;
-                free(current);
-                current = next;
-            }
-
             grid->cells[i][j].head = NULL;
             grid->cells[i][j].count = 0;
         }
@@ -72,25 +79,14 @@ void grid_insert(SpatialGrid *grid, Circle *circle)
     int row = get_circle_row(grid, circle);
     int col = get_circle_column(grid, circle);
 
-    CircleNode *new_node = malloc(sizeof(CircleNode));
+    CircleNode *new_node = node_pool_allocate(grid->node_pool);
     new_node->circle = circle;
-    new_node->next = NULL;
-
-    if (grid->cells[row][col].head == NULL)
-    {
-        grid->cells[row][col].head = new_node;
-        grid->cells[row][col].count = 1;
-        return;
-    }
-    CircleNode *current = grid->cells[row][col].head;
-    while (current->next != NULL)
-        current = current->next;
-
-    current->next = new_node;
+    new_node->next = grid->cells[row][col].head;
+    
+    grid->cells[row][col].head = new_node;
     grid->cells[row][col].count++;
 }
 
-// TODO: Get it by cell, not by circle
 void grid_get_nearby_circles(SpatialGrid *grid, Circle *circle, CircleList *out)
 {
     out->head = NULL;
@@ -118,7 +114,7 @@ void grid_get_nearby_circles(SpatialGrid *grid, Circle *circle, CircleList *out)
                 CircleNode* current = grid->cells[check_row][check_col].head;
                 while(current != NULL)
                 {
-                    CircleNode* new_node = malloc(sizeof(CircleNode));
+                    CircleNode* new_node = node_pool_allocate(grid->node_pool);
                     new_node->circle = current->circle;
                     new_node->next = out->head;
                     out->head = new_node;
@@ -161,6 +157,9 @@ void grid_destroy(SpatialGrid *grid)
 {
     if (grid)
     {
+        // Free node pool
+        node_pool_destroy(grid->node_pool);
+        
         // Free each row
         for (int i = 0; i < grid->rows; i++)
         {
@@ -172,5 +171,49 @@ void grid_destroy(SpatialGrid *grid)
 
         // Free the grid itself
         free(grid);
+    }
+}
+
+// Node Pool Implementation
+NodePool* node_pool_create(int capacity)
+{
+    NodePool* pool = malloc(sizeof(NodePool));
+    pool->nodes = malloc(capacity * sizeof(CircleNode));
+    pool->capacity = capacity;
+    pool->next_index = 0;
+    return pool;
+}
+
+void node_pool_reset(NodePool* pool)
+{
+    pool->next_index = 0;
+}
+
+CircleNode* node_pool_allocate(NodePool* pool)
+{
+    if (pool->next_index >= pool->capacity)
+    {
+        // Pool exhausted - reallocate with double capacity
+        int new_capacity = pool->capacity * 2;
+        CircleNode* new_nodes = realloc(pool->nodes, new_capacity * sizeof(CircleNode));
+        if (new_nodes == NULL)
+        {
+            // Realloc failed - fatal error
+            fprintf(stderr, "Node pool exhausted and realloc failed!\n");
+            exit(1);
+        }
+        pool->nodes = new_nodes;
+        pool->capacity = new_capacity;
+    }
+    
+    return &pool->nodes[pool->next_index++];
+}
+
+void node_pool_destroy(NodePool* pool)
+{
+    if (pool)
+    {
+        free(pool->nodes);
+        free(pool);
     }
 }
